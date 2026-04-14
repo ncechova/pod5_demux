@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pod5-demux"
+version = "0.1.0"
+description = "Optimalizovaný nástroj pro demultiplexing POD5 souborů podle mapy z BAM/SAM/FASTQ."
+authors = [
+    {name = "Nikola Čechová", email = "256971@vutbr.cz"},
+]
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "pod5",
+    "biopython",
+    "pysam; sys_platform != 'win32'",
+    "typer"
+]
+
+[project.scripts]
+pod5_demux = "pod5_demux.__main__:app"
