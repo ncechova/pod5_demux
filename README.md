@@ -97,7 +97,8 @@ vystup/
 ├── barcode02/
 │   └── run1.pod5
 └── unclassified/
-    └── run1.pod5
+│   ├── run1.pod5
+│   └── unclassified.pod5
 ```
 
 **`single_file`** — všechna čtení jednoho barkódu jsou sloučena do jednoho souboru:
@@ -130,7 +131,7 @@ pod5_demux \
   -m single_file
 ```
 
-**Omezení počtu jader (vhodné pro sdílené HPC prostředí):**
+**Omezení počtu jader:**
 
 ```bash
 pod5_demux \
@@ -174,6 +175,5 @@ Vytvořeno souborů: 24
 ## Limitace
 
 - **Windows:** Knihovna `pysam` není na Windows dostupná. Nástroj to automaticky detekuje a přepne na záložní vlastní parsery pro SAM (pomalejší než pysam, pro BAM nefunguje). Formát FASTQ je plně podporován na všech platformách.
-- **Velké datasety:** Při zpracování velmi velkých souborů (stovky GB) je doporučeno spouštět nástroj na Linuxovém HPC clusteru s dostatkem RAM (orientačně 2–4 GB na vlákno).
 - **Nedemultiplexovaná čtení:** Čtení, jejichž UUID není nalezeno v mapovacím souboru, jsou zařazena do skupiny `unclassified`.
 - **Formát vstupu:** Nástroj automaticky detekuje formát vstupního mapovacího souboru. Vstupní složka musí obsahovat soubory pouze jednoho formátu (nelze kombinovat BAM a FASTQ ve stejné složce).
