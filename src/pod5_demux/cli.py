@@ -5,7 +5,7 @@ import time
 import shutil
 import argparse
 from functools import partial
-from multiprocessing import Pool, cpu_count
+from multiprocessing import Pool
 from typing import Annotated, Optional
 import re
 from enum import Enum
@@ -156,13 +156,11 @@ def main(
                                      help="Cesta k POD5 datům.")],
     output: Annotated[str, typer.Option("-o", "--output", help="Výstupní složka. (Výchozí: 'pod5_demux_output')")] = "pod5_demux_output",
     mode: Annotated[OutputMode, typer.Option("-m", "--mode", help="Režim: 'single_file' nebo 'folder'.")] = OutputMode.folder,
-    threads: Annotated[Optional[int], typer.Option("-t", "--threads", help="Počet jader CPU.")] = None
+    threads: Annotated[Optional[int], typer.Option("-t", "--threads", help="Počet jader CPU použitých k výpočtům.")] = 8
 ):
     """
     Spustí proces demultiplexace.
     """
-    if threads is None:
-        threads = cpu_count()
 
     run_demultiplexing(seq, pod5_path, output, mode, threads)
 
