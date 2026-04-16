@@ -12,7 +12,7 @@ from enum import Enum
 
 import typer
 
-# Importujeme funkce z našich vlastních modulů
+# Import funkcí
 from pod5_demux.utils import ensure_unique_dir
 from pod5_demux.mapping import load_barcode_map_parallel
 from pod5_demux.pod5_core import split_one_pod5_by_barcode, merge_pod5_files
