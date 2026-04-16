@@ -49,14 +49,20 @@ Závislosti se nainstalují automaticky při instalaci balíčku:
 
 ## Instalace
 
-### Doporučený způsob — instalace z lokálního zdrojového kódu
+### Instalace z lokálního zdrojového kódu
 
 ```bash
 # 1. Klonujte nebo rozbalte zdrojové kódy do složky
 cd pod5-demux
 
 # 2. Nainstalujte balíček (včetně závislostí)
-pip install .
+pip install.
+```
+
+### Instalace z githubu
+
+```bash
+pip install git+https://github.com/ncechova/pod5_demux.git
 ```
 
 Po instalaci bude dostupný příkaz `pod5_demux`:
