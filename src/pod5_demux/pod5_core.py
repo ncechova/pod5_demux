@@ -46,7 +46,7 @@ def merge_pod5_files(args:tuple):
     """Pokusí se o rychlý subprocess merge, při chybě použije pomalejší writer."""
     input_files, output_file = args
     try:
-        # 1. Pokus: Volání pod5 jako systémové utility
+        # 1. Pokus: Volání pod5 přímo
         subprocess.run(
             ["pod5", "merge"] + input_files + ["-o", output_file],
             check=True,
@@ -55,7 +55,7 @@ def merge_pod5_files(args:tuple):
         )
     except (FileNotFoundError, subprocess.CalledProcessError):
         try:
-            # 2. Pokus: Volání přes aktuální Python exe (obchází chybějící pod5 v bash PATH na HPC)
+            # 2. Pokus: Volání přes aktuální Python exe
             python_bin_dir = os.path.dirname(sys.executable)
             pod5_exe = os.path.join(python_bin_dir, "pod5")
             subprocess.run(
@@ -65,7 +65,7 @@ def merge_pod5_files(args:tuple):
                 stderr=subprocess.DEVNULL
             )
         except (FileNotFoundError, subprocess.CalledProcessError):
-            # 3. Záchranná brzda: Pure Python API (pomalé, ale funguje vždy)
+            # Záchrana přes pod5 writer (nejpomalejší)
             print(f"  [Info] Subprocess merge selhal, používám Python API pro {Path(output_file).name}")
             with pod5.Writer(output_file) as writer:
                 for file in input_files:
