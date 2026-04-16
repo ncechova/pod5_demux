@@ -18,7 +18,7 @@ from pod5_demux.mapping import load_barcode_map_parallel
 from pod5_demux.pod5_core import split_one_pod5_by_barcode, merge_pod5_files
 
 app = typer.Typer(
-    help="Optimalizovaný nástroj pro demultiplexing POD5 souborů podle mapy z BAM/SAM/FASTQ.",
+    help="Optimalizovaný nástroj pro demultiplexaci POD5 souborů podle mapy z BAM/SAM/FASTQ.",
     add_completion=False,
 )
 BARCODE_RE = re.compile(r"(barcode\d+)")
@@ -159,7 +159,7 @@ def main(
     threads: Annotated[Optional[int], typer.Option("-t", "--threads", help="Počet jader CPU.")] = None
 ):
     """
-    Spustí proces demultiplexování.
+    Spustí proces demultiplexace.
     """
     if threads is None:
         threads = cpu_count()
