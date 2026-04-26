@@ -234,7 +234,7 @@ def parse_single_mapping_file(file_path: str, file_type: str, is_fmap: bool) -> 
 
     if file_type in ["sam", "bam"]:
         if not PYSAM_AVAILABLE and file_type == "bam":
-            _parse_bam_without_pysam(file_path, is_fmap, clean_filename)
+            mapping, filename_map = _parse_bam_without_pysam(file_path, is_fmap, clean_filename)
             
         elif not PYSAM_AVAILABLE and file_type == "sam":
             with open(file_path, 'r') as f:
