@@ -2,6 +2,7 @@
 import os
 import re
 import gzip
+import io
 import glob
 from pathlib import Path
 from functools import partial
