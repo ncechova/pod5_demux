@@ -17,6 +17,14 @@ from pod5_demux.utils import ensure_unique_dir
 from pod5_demux.mapping import load_barcode_map_parallel
 from pod5_demux.pod5_core import split_one_pod5_by_barcode, merge_pod5_files
 
+try:
+    # Změna barvy pro [required]
+    from typer import rich_utils as _ru
+    _ru.STYLE_REQUIRED_SHORT = "bright_red"
+    _ru.STYLE_REQUIRED_LONG  = "bright_red"
+except (ImportError, AttributeError):
+    pass
+
 app = typer.Typer(
     help="Optimalizovaný nástroj pro demultiplexaci POD5 souborů podle mapy z BAM/SAM/FASTQ.",
     add_completion=False,
