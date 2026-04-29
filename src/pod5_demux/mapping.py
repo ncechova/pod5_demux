@@ -7,7 +7,7 @@ import glob
 from pathlib import Path
 from functools import partial
 from multiprocessing import Pool
-from typing import Tuple, Dict
+from typing import Tuple, Dict, Optional
 import struct
 import zlib
 
@@ -94,7 +94,7 @@ def _read_bgzf_blocks(file_path: str) -> bytes:
 # BAM parser — čte pouze read_id a tagy BC/RG
 # ---------------------------------------------------------------------------
  
-def _parse_bam_without_pysam(file_path: str, is_fmap: bool, clean_filename: str) -> Tuple[Dict, Dict]:
+def _parse_bam_without_pysam(file_path: str, is_fmap: bool, clean_filename: str, known_bc: Optional[str]) -> Tuple[Dict, Dict]:
     """
     Čte BAM soubor bez pysam. Extrahuje pouze read_id a tagy BC/RG.
  
@@ -142,13 +142,16 @@ def _parse_bam_without_pysam(file_path: str, is_fmap: bool, clean_filename: str)
  
             # read_name (UUID) — bez koncového NUL (SAMv1 sekce 4.2)
             read_id = block[32: 32 + l_read_name - 1].decode('ascii', errors='replace')
- 
-            # Offset kde začínají optional tagy:
-            # 32 (pevná část) + l_read_name + n_cigar_op×4 + (l_seq+1)//2 + l_seq
-            tag_offset = 32 + l_read_name + n_cigar_op * 4 + (l_seq + 1) // 2 + l_seq
- 
-            # Parsování optional tagů dle SAMv1 sekce 4.2.4, str. 16–17
-            found_bc = _extract_bc_tag(block, tag_offset)
+
+            if known_bc:
+                found_bc = known_bc
+            else:
+                # Offset kde začínají optional tagy:
+                # 32 (pevná část) + l_read_name + n_cigar_op×4 + (l_seq+1)//2 + l_seq
+                tag_offset = 32 + l_read_name + n_cigar_op * 4 + (l_seq + 1) // 2 + l_seq
+    
+                # Parsování optional tagů dle SAMv1 sekce 4.2.4, str. 16–17
+                found_bc = _extract_bc_tag(block, tag_offset)
  
             if found_bc:
                 mapping[read_id] = found_bc
@@ -223,7 +226,7 @@ def _extract_bc_tag(block: bytes, offset: int) -> str:
  
     return rg_val  # BC nenalezeno, vrátíme RG (nebo None)
 
-def parse_single_mapping_file(file_path: str, file_type: str, is_fmap: bool) -> Tuple[Dict, Dict]:
+def parse_single_mapping_file(file_path: str, file_type: str, is_fmap: bool, known_bc: Optional[str]) -> Tuple[Dict, Dict]:
     """Vyparsuje jeden soubor a vrátí lokální slovníky."""
     mapping = {}
     filename_map = {}
@@ -234,7 +237,7 @@ def parse_single_mapping_file(file_path: str, file_type: str, is_fmap: bool) -> 
 
     if file_type in ["sam", "bam"]:
         if not PYSAM_AVAILABLE and file_type == "bam":
-            mapping, filename_map = _parse_bam_without_pysam(file_path, is_fmap, clean_filename)
+            mapping, filename_map = _parse_bam_without_pysam(file_path, is_fmap, clean_filename, known_bc)
             
         elif not PYSAM_AVAILABLE and file_type == "sam":
             with open(file_path, 'r') as f:
@@ -244,13 +247,16 @@ def parse_single_mapping_file(file_path: str, file_type: str, is_fmap: bool) -> 
                     if len(parts) < 11: continue
                     read_id = parts[0]
                     found_bc = None
-                    for field in parts[11:]:
-                        if field.startswith("BC:Z:"):
-                            found_bc = field.split(":")[2].strip()
-                            break
-                        elif field.startswith("RG:Z:"):
-                            match = BARCODE_RE.search(field)
-                            found_bc = match.group() if match else field
+                    if known_bc:
+                        found_bc = known_bc
+                    else:
+                        for field in parts[11:]:
+                            if field.startswith("BC:Z:"):
+                                found_bc = field.split(":")[2].strip()
+                                break
+                            elif field.startswith("RG:Z:"):
+                                match = BARCODE_RE.search(field)
+                                found_bc = match.group() if match else field
                     if found_bc:
                         mapping[read_id] = found_bc
                         if is_fmap: filename_map[read_id] = clean_filename
@@ -260,15 +266,18 @@ def parse_single_mapping_file(file_path: str, file_type: str, is_fmap: bool) -> 
                 with pysam.AlignmentFile(file_path, mode, check_sq=False) as samfile:
                     for read in samfile.fetch(until_eof=True):
                         read_id = read.query_name
-                        try:
-                            bc = read.get_tag("BC")
-                        except KeyError:
+                        if known_bc:
+                            bc = known_bc
+                        else:
                             try:
-                                rg = read.get_tag("RG")
-                                match = BARCODE_RE.search(str(rg))
-                                bc = match.group() if match else str(rg)
+                                bc = read.get_tag("BC")
                             except KeyError:
-                                bc = None
+                                try:
+                                    rg = read.get_tag("RG")
+                                    match = BARCODE_RE.search(str(rg))
+                                    bc = match.group() if match else str(rg)
+                                except KeyError:
+                                    bc = None
                         if bc:
                             mapping[read_id] = bc
                             if is_fmap: filename_map[read_id] = clean_filename
@@ -281,16 +290,19 @@ def parse_single_mapping_file(file_path: str, file_type: str, is_fmap: bool) -> 
         try:
             with open_func(file_path, mode) as handle:
                 for record in SeqIO.parse(handle, "fastq"):
-                    match = BARCODE_RE.search(record.description)
-                    if match:
-                        mapping[record.id] = match.group()
-                        if is_fmap: filename_map[record.id] = clean_filename
+                    if known_bc:
+                        mapping[record.id] = known_bc
+                    else:
+                        match = BARCODE_RE.search(record.description)
+                        if match:
+                            mapping[record.id] = match.group()
+                    if is_fmap: filename_map[record.id] = clean_filename
         except Exception as e:
             print(f"!!! Chyba při čtení FASTQ {file_path}: {e}")
 
     return mapping, filename_map
 
-def load_barcode_map_parallel(input_path: str, output_format: str, n_cores: int) -> Tuple[Dict, Dict]:
+def load_barcode_map_parallel(input_path: str, output_format: str, known_bc: Optional[str], n_cores: int) -> Tuple[Dict, Dict]:
     """Najde soubory a paralelně z nich sestaví jeden velký slovník."""
     is_fmap = (output_format == "folder")
     input_format, path_type = detect_format(input_path)
@@ -308,7 +320,7 @@ def load_barcode_map_parallel(input_path: str, output_format: str, n_cores: int)
     barcode_map = {}
     filename_map = {}
     
-    worker = partial(parse_single_mapping_file, file_type=input_format, is_fmap=is_fmap)
+    worker = partial(parse_single_mapping_file, file_type=input_format, is_fmap=is_fmap, known_bc=known_bc)
     
     with Pool(processes=n_cores) as pool:
         results = pool.map(worker, files)
