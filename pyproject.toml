@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pod5-demux"
-version = "1.0.0"
+version = "1.0.1"
 description = "Optimalizovaný nástroj pro demultiplexaci POD5 souborů na základě informací z BAM/SAM/FASTQ."
 authors = [
     {name = "Nikola Čechová", email = "256971@vutbr.cz"},
