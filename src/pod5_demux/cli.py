@@ -36,7 +36,7 @@ class OutputMode(str, Enum):
     single_file = "single_file"
     folder = "folder"
 
-def run_demultiplexing(input_seq: str, input_pod5: str, output_dir: str, output_mode: OutputMode, n_cores: int):
+def run_demultiplexing(input_seq: str, input_pod5: str, output_dir: str, known_bc: Optional[str], output_mode: OutputMode, n_cores: int):
     start_time = time.perf_counter()
 
     output_dir = ensure_unique_dir(output_dir)
@@ -54,7 +54,7 @@ def run_demultiplexing(input_seq: str, input_pod5: str, output_dir: str, output_
 
     # NAČTENÍ MAPY
     try:
-        bc_map, f_map = load_barcode_map_parallel(input_seq, output_mode, n_cores)
+        bc_map, f_map = load_barcode_map_parallel(input_seq, output_mode, known_bc, n_cores)
     except ValueError as e:
         print(f"Kritická chyba: {e}")
         return
@@ -163,6 +163,7 @@ def main(
                                      readable=True,
                                      help="Cesta k POD5 datům.")],
     output: Annotated[str, typer.Option("-o", "--output", help="Výstupní složka. (Výchozí: 'pod5_demux_output')")] = "pod5_demux_output",
+    known_bc: Annotated[Optional[str], typer.Option("-b", "--bc", help="Název barkódu mapovací sekvence.")] = None,
     mode: Annotated[OutputMode, typer.Option("-m", "--mode", help="Režim: 'single_file' nebo 'folder'.")] = OutputMode.folder,
     threads: Annotated[Optional[int], typer.Option("-t", "--threads", help="Počet jader CPU použitých k výpočtům.")] = 8
 ):
@@ -170,5 +171,5 @@ def main(
     Spustí proces demultiplexace.
     """
 
-    run_demultiplexing(seq, pod5_path, output, mode, threads)
+    run_demultiplexing(seq, pod5_path, output, known_bc, mode, threads)
 
