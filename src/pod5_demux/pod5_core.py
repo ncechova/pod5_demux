@@ -4,8 +4,9 @@ import sys
 import subprocess
 from pathlib import Path
 import pod5
+from typing import Optional
 
-def split_one_pod5_by_barcode(pod5_file: str, output_dir: str, mapping: dict, filename_map: dict, output_mode: str) -> dict:
+def split_one_pod5_by_barcode(pod5_file: str, output_dir: str, mapping: dict, filename_map: dict, output_mode: str, known_bc: Optional[str]) -> dict:
     source_name = Path(pod5_file).stem
     writers = {}
     stats = {"processed": 0, "sorted": 0, "unclassified": 0}
@@ -17,6 +18,9 @@ def split_one_pod5_by_barcode(pod5_file: str, output_dir: str, mapping: dict, fi
                 stats["processed"] += 1
                 read_id = str(read_record.read_id)
                 bc_name = mapping.get(read_id, "unclassified")
+
+                if known_bc and bc_name != known_bc:
+                    continue
 
                 if output_mode == "folder" and filename_map:
                     origin_name = filename_map.get(read_id, "unknown")

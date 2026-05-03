@@ -3,7 +3,6 @@ import os
 import glob
 import time
 import shutil
-import argparse
 from functools import partial
 from multiprocessing import Pool
 from typing import Annotated, Optional
@@ -78,7 +77,7 @@ def run_demultiplexing(input_seq: str, input_pod5: str, output_dir: str, known_b
     os.makedirs(temp_dir, exist_ok=True)
 
     print(f"-> Rozděluji {len(pod5_files)} POD5 souborů...")
-    worker_pod5 = partial(split_one_pod5_by_barcode, mapping=bc_map, output_dir=output_dir, output_mode=output_mode, filename_map=f_map)
+    worker_pod5 = partial(split_one_pod5_by_barcode, mapping=bc_map, output_dir=output_dir, output_mode=output_mode, filename_map=f_map, known_bc=known_bc)
 
     with Pool(n_cores) as p:
         results = p.map(worker_pod5, pod5_files)
