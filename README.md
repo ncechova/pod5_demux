@@ -85,9 +85,10 @@ pod5_demux -s <cesta_k_mapě> -p <cesta_k_pod5> -o <výstupní_složka> [volby]
 
 | Parametr | Zkratka | Popis | Výchozí hodnota |
 |---|---|---|---|
-| `--seq` | `-s` | Cesta k mapovacímu souboru nebo složce (BAM/SAM/FASTQ) | — (povinné) |
-| `--pod5` | `-p` | Cesta k POD5 souboru nebo složce | — (povinné) |
+| `--seq` | `-s` | Cesta k mapovacímu souboru nebo složce (BAM/SAM/FASTQ) | -- (povinné) |
+| `--pod5` | `-p` | Cesta k POD5 souboru nebo složce | -- (povinné) |
 | `--output` | `-o` | Výstupní složka | `pod5_demux_output` |
+| `--bc` | `-b` | Vynutí přiřazení konkrétního barkódu (např. `barcode05`) všem čtením z mapovacího souboru. | -- (volitelné) |
 | `--mode` | `-m` | Režim výstupu: `folder` nebo `single_file` | `folder` |
 | `--threads` | `-t` | Počet vláken CPU | 8 |
 
@@ -115,6 +116,14 @@ vystup/
 ├── barcode02.pod5
 └── unclassified.pod5
 ```
+
+### Filtrování a vynucení specifického barkódu (`--bc`)
+
+Pokud je použit parametr `--bc <název_barkódu>`, nástroj nebude barkódy vyhledávat v metadatech mapovacích souborů, ale **všem čtením v mapě přiřadí zadaný barkód**. Zároveň dojde k vyfiltrování pouze tohoto vzorku – ostatní čtení v původních POD5 souborech budou přeskočena.
+
+Tato funkce je ideální v situacích, kdy:
+- Máte k dispozici vstupní soubor (např. FASTQ), který už obsahuje data pouze z jednoho vzorku, ale chybí v něm metadata o barkódech.
+- Chcete z původního velkého POD5 datasetu efektivně a rychle vyextrahovat pouze data patřící jednomu konkrétnímu vzorku bez nutnosti zpracovávat zbytek.
 
 ### Příklady použití
 
@@ -146,6 +155,15 @@ pod5_demux \
   -o /data/demuxed/ \
   -t 8
 ```
+
+**Extrakce a přiřazení jednoho specifického barkódu:**
+
+```bash
+pod5_demux \
+  -s /data/basecalled/sample_barcode05.fastq \
+  -p /data/raw/ \
+  -o /data/demuxed_single/ \
+  -b barcode05
 
 ---
 
