@@ -51,25 +51,25 @@ Závislosti se nainstalují automaticky při instalaci balíčku:
 
 ### Instalace z lokálního zdrojového kódu
 
-'''bash
+```bash
 # 1. Klonujte nebo rozbalte zdrojové kódy do složky
 cd pod5-demux
 
 # 2. Nainstalujte balíček (včetně závislostí)
 pip install.
-'''
+```
 
 ### Instalace z githubu
 
-'''bash
+```bash
 pip install git+https://github.com/ncechova/pod5_demux.git
-'''
+```
 
 Po instalaci bude dostupný příkaz `pod5_demux`:
 
-'''bash
+```bash
 pod5_demux --help
-'''
+```
 
 ---
 
@@ -77,9 +77,9 @@ pod5_demux --help
 
 ### Základní syntaxe
 
-'''bash
+```bash
 pod5_demux -s <cesta_k_mapě> -p <cesta_k_pod5> -o <výstupní_složka> [volby]
-'''
+```
 
 ### Parametry
 
@@ -96,7 +96,7 @@ pod5_demux -s <cesta_k_mapě> -p <cesta_k_pod5> -o <výstupní_složka> [volby]
 
 **'folder'** (výchozí) — zachová původní strukturu souborů, každý barkód dostane vlastní podsložku:
 
-'''
+```
 vystup/
 ├── barcode01/
 │   ├── run1.pod5
@@ -106,16 +106,16 @@ vystup/
 └── unclassified/
 │   ├── run1.pod5
 │   └── unclassified.pod5
-'''
+```
 
 **`single_file`** — všechna čtení jednoho barkódu jsou sloučena do jednoho souboru:
 
-'''
+```
 vystup/
 ├── barcode01.pod5
 ├── barcode02.pod5
 └── unclassified.pod5
-'''
+```
 
 ### Filtrování a vynucení specifického barkódu (`--bc`)
 
@@ -129,42 +129,42 @@ Tato funkce je ideální v situacích, kdy:
 
 **Demultiplexace s BAM mapou, výstup do složek:**
 
-'''bash
+```bash
 pod5_demux \
   -s /data/basecalled/calls.bam \
   -p /data/raw/ \
   -o /data/demuxed/
-'''
+```
 
 **Demultiplexace s FASTQ mapou, vše do jednoho souboru na barkód:**
 
-'''bash
+```bash
 pod5_demux \
   -s /data/basecalled/fastq/ \
   -p /data/raw/ \
   -o /data/demuxed/ \
   -m single_file
-'''
+```
 
 **Omezení počtu jader:**
 
-'''bash
+```bash
 pod5_demux \
   -s /data/basecalled/calls.bam \
   -p /data/raw/ \
   -o /data/demuxed/ \
   -t 8
-'''
+```
 
 **Extrakce a přiřazení jednoho specifického barkódu:**
 
-'''bash
+```bash
 pod5_demux \
   -s /data/basecalled/sample_barcode05.fastq \
   -p /data/raw/ \
   -o /data/demuxed_single/ \
   -b barcode05
-'''
+```
 
 ---
 
